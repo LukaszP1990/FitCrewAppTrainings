@@ -3,6 +3,7 @@ package com.fitcrew.FitCrewAppTrainings.domains;
 import lombok.*;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
@@ -14,21 +15,21 @@ import java.io.Serializable;
 @ToString
 public class TrainingEntity implements Serializable {
 
-    private static final long serialVersionUID = -3255126230685615683L;
+	private static final long serialVersionUID = -3255126230685615683L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+	@Column(name = "TrainingName", nullable = false, length = 100, unique = true)
+	private String trainingName;
 
-    @Column(nullable = false, length = 400)
-    private String description;
+	@Column(nullable = false, length = 400)
+	private String description;
 
-    @Column(nullable = false)
-    private String training;
+	@Column(nullable = false)
+	private String training;
 
-    @Column(name = "CreatedBy", nullable = false, length = 50)
-    private String createdBy;
+	@Column(name = "TrainerEmail", nullable = false, length = 50)
+	private String trainerEmail;
 }
