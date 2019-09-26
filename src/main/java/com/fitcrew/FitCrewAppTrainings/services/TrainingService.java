@@ -71,7 +71,8 @@ public class TrainingService {
 		}
 	}
 
-	public Either<ErrorMsg, TrainingDto> deleteTraining(String trainingName, String trainerEmail) {
+	public Either<ErrorMsg, TrainingDto> deleteTraining(String trainingName,
+														String trainerEmail) {
 
 		ModelMapper modelMapper = prepareModelMapperForExistingTraining();
 		TrainingEntity trainingToDelete = trainingDao.findByTrainingNameAndTrainerEmail(trainingName, trainerEmail);
@@ -90,10 +91,13 @@ public class TrainingService {
 		}
 	}
 
-	public Either<ErrorMsg, TrainingDto> updateTraining(TrainingDto trainingDto, String trainerEmail) {
+	public Either<ErrorMsg, TrainingDto> updateTraining(TrainingDto trainingDto,
+														String trainerEmail) {
 
 		List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
-		TrainingEntity foundTrainingEntityByTrainingName = checkIfTrainingNameExist(trainingDto.getName(), trainerTrainings);
+
+		TrainingEntity foundTrainingEntityByTrainingName =
+				checkIfTrainingNameExist(trainingDto.getName(), trainerTrainings);
 
 		if (foundTrainingEntityByTrainingName != null) {
 			log.debug("Training to update {}", foundTrainingEntityByTrainingName);
@@ -108,7 +112,9 @@ public class TrainingService {
 
 		ModelMapper modelMapper = prepareModelMapperForExistingTraining();
 		List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
-		TrainingEntity foundTrainerEntityByTrainingName = checkIfTrainingNameExist(trainingName, trainerTrainings);
+
+		TrainingEntity foundTrainerEntityByTrainingName =
+				checkIfTrainingNameExist(trainingName, trainerTrainings);
 
 		if (foundTrainerEntityByTrainingName != null) {
 			TrainingDto trainingToReturn = modelMapper.map(foundTrainerEntityByTrainingName, TrainingDto.class);
@@ -122,7 +128,8 @@ public class TrainingService {
 		}
 	}
 
-	private Either<ErrorMsg, TrainingDto> prepareTrainingUpdate(TrainingDto trainingDto, TrainingEntity foundTrainerEntityByTrainingName) {
+	private Either<ErrorMsg, TrainingDto> prepareTrainingUpdate(TrainingDto trainingDto,
+																TrainingEntity foundTrainerEntityByTrainingName) {
 		ModelMapper modelMapper = prepareModelMapperForExistingTraining();
 
 		setNewValuesForTraining(trainingDto, foundTrainerEntityByTrainingName);
@@ -135,7 +142,8 @@ public class TrainingService {
 				NOT_SUCCESSFULLY_MAPPING);
 	}
 
-	private void setNewValuesForTraining(TrainingDto trainingDto, TrainingEntity foundTrainerEntityByTrainingName) {
+	private void setNewValuesForTraining(TrainingDto trainingDto,
+										 TrainingEntity foundTrainerEntityByTrainingName) {
 		foundTrainerEntityByTrainingName.setTrainingName(trainingDto.getName());
 		foundTrainerEntityByTrainingName.setDescription(trainingDto.getDescription());
 		foundTrainerEntityByTrainingName.setTraining(trainingDto.getTraining());

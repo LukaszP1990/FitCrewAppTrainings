@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/training")
-public class TrainingResource {
+class TrainingResource {
 
 	private final TrainingService trainingService;
 
