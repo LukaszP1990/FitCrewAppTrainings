@@ -93,13 +93,32 @@ public class TrainingService {
 	public Either<ErrorMsg, TrainingDto> updateTraining(TrainingDto trainingDto, String trainerEmail) {
 
 		List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
-		TrainingEntity foundTrainerEntityByTrainingName = checkIfTrainingNameExist(trainingDto, trainerTrainings);
+		TrainingEntity foundTrainingEntityByTrainingName = checkIfTrainingNameExist(trainingDto.getName(), trainerTrainings);
 
-		if (foundTrainerEntityByTrainingName != null) {
-			return prepareTrainingUpdate(trainingDto, foundTrainerEntityByTrainingName);
+		if (foundTrainingEntityByTrainingName != null) {
+			log.debug("Training to update {}", foundTrainingEntityByTrainingName);
+			return prepareTrainingUpdate(trainingDto, foundTrainingEntityByTrainingName);
 		} else {
 			log.debug("No training updated");
 			return Either.left(new ErrorMsg("No training updated"));
+		}
+	}
+
+	public Either<ErrorMsg, TrainingDto> selectTraining(String trainerEmail, String trainingName) {
+
+		ModelMapper modelMapper = prepareModelMapperForExistingTraining();
+		List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
+		TrainingEntity foundTrainerEntityByTrainingName = checkIfTrainingNameExist(trainingName, trainerTrainings);
+
+		if (foundTrainerEntityByTrainingName != null) {
+			TrainingDto trainingToReturn = modelMapper.map(foundTrainerEntityByTrainingName, TrainingDto.class);
+
+			return checkEitherResponse(trainingToReturn,
+					SUCCESSFULLY_MAPPING,
+					NOT_SUCCESSFULLY_MAPPING);
+		} else {
+			log.debug("No training selected");
+			return Either.left(new ErrorMsg("No training selected"));
 		}
 	}
 
@@ -123,9 +142,9 @@ public class TrainingService {
 		foundTrainerEntityByTrainingName.setTrainerEmail(trainingDto.getTrainerEmail());
 	}
 
-	private TrainingEntity checkIfTrainingNameExist(TrainingDto trainingDto, List<TrainingEntity> trainerTrainings) {
+	private TrainingEntity checkIfTrainingNameExist(String trainingName, List<TrainingEntity> trainerTrainings) {
 		return trainerTrainings.stream()
-				.filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingDto.getName()))
+				.filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingName))
 				.findFirst()
 				.orElseGet(null);
 	}

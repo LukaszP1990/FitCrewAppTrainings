@@ -48,10 +48,10 @@ public class TrainingResource {
 	@GetMapping(value = "/getClientsWhoBoughtTraining/{trainerName}/trainerName",
 			consumes = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,},
+					MediaType.APPLICATION_XML_VALUE},
 			produces = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,})
+					MediaType.APPLICATION_XML_VALUE})
 	private ResponseEntity getClientsWhoBoughtTrainingFromTrainer(@PathVariable String trainerName) {
 //        Either<ErrorMsg, List<TrainingDto>> clientWhoBoughtTrainingFromTrainer =
 //                trainingService.getTrainingsFromTrainer(trainerName);
@@ -70,10 +70,10 @@ public class TrainingResource {
 	@GetMapping(value = "/getTrainerTrainings/{trainerName}/trainerName",
 			consumes = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,},
+					MediaType.APPLICATION_XML_VALUE},
 			produces = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,})
+					MediaType.APPLICATION_XML_VALUE})
 
 	private ResponseEntity getTrainerTrainings(@PathVariable String trainerEmail) {
 
@@ -93,10 +93,10 @@ public class TrainingResource {
 	@PostMapping(value = "/createTraining",
 			consumes = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,},
+					MediaType.APPLICATION_XML_VALUE},
 			produces = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,})
+					MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity createTrainingByTrainer(@RequestBody TrainingDto trainingDto) {
 
 		Either<ErrorMsg, TrainingDto> createdTrainingByTrainer =
@@ -117,10 +117,10 @@ public class TrainingResource {
 	@DeleteMapping(value = "/deleteTraining/{trainerEmail}/trainerEmail/{trainingName}/trainingName",
 			consumes = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,},
+					MediaType.APPLICATION_XML_VALUE},
 			produces = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,})
+					MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity deleteTraining(@PathVariable String trainerEmail,
 										 @PathVariable String trainingName) {
 
@@ -141,10 +141,10 @@ public class TrainingResource {
 	@PutMapping(value = "/updateTraining/{trainerEmail}/trainerEmail",
 			consumes = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,},
+					MediaType.APPLICATION_XML_VALUE},
 			produces = {
 					MediaType.APPLICATION_JSON_VALUE,
-					MediaType.APPLICATION_XML_VALUE,})
+					MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity updateTraining(@RequestBody TrainingDto trainingDto,
 										 @PathVariable String trainerEmail) {
 
@@ -152,5 +152,29 @@ public class TrainingResource {
 				trainingService.updateTraining(trainingDto, trainerEmail);
 
 		return ResponseResolver.resolve(deletedTraining);
+	}
+
+	@ApiOperation(value = "Training to send to the client")
+	@ApiResponses(value =
+			{
+					@ApiResponse(code = 200, message = "Successful to send to the client response!"),
+					@ApiResponse(code = 400, message = "400 bad request, rest call is made with some invalid data!"),
+					@ApiResponse(code = 404, message = "404 not found, url is wrong")
+			}
+	)
+	@GetMapping(value = "/selectTraining/{trainerEmail}/trainerEmail/{trainingName}/trainingName",
+			consumes = {
+					MediaType.APPLICATION_JSON_VALUE,
+					MediaType.APPLICATION_XML_VALUE},
+			produces = {
+					MediaType.APPLICATION_JSON_VALUE,
+					MediaType.APPLICATION_XML_VALUE})
+	private ResponseEntity selectTraining(@PathVariable String trainerEmail,
+										  @PathVariable String trainingName) {
+
+		Either<ErrorMsg, TrainingDto> selectedTraining =
+				trainingService.selectTraining(trainerEmail, trainingName);
+
+		return ResponseResolver.resolve(selectedTraining);
 	}
 }
