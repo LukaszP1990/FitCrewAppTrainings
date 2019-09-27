@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Getter
@@ -32,4 +33,7 @@ public class TrainingEntity implements Serializable {
 
 	@Column(name = "TrainerEmail", nullable = false, length = 50)
 	private String trainerEmail;
+
+	@Column(name = "Clients")
+	private List<String> clients;
 }

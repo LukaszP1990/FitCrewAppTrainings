@@ -11,5 +11,7 @@ import java.util.List;
 public interface TrainingDao extends CrudRepository<TrainingEntity, Long> {
 	List<TrainingEntity> findByTrainerEmail(String trainerEmail);
 
+	TrainingEntity findByTrainingName(String trainingName);
+
 	TrainingEntity findByTrainingNameAndTrainerEmail(String trainingName, String trainerEmail);
 }

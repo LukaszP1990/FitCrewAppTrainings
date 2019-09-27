@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import java.io.Serializable;
+import java.util.List;
 
 @ApiModel(value = "Training")
 @Getter
@@ -37,4 +38,7 @@ public class TrainingDto implements Serializable {
 
 	@ApiModelProperty(value = "Trainer email address who created this training")
 	private String trainerEmail;
+
+	@ApiModelProperty(value = "Clients who bought this training")
+	private List<String> clients;
 }
