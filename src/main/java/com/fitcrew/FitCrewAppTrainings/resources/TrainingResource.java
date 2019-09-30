@@ -52,7 +52,7 @@ class TrainingResource {
             produces = {
                     MediaType.APPLICATION_JSON_VALUE,
                     MediaType.APPLICATION_XML_VALUE})
-    private ResponseEntity getClientsWhoBoughtTrainingFromTrainer(@PathVariable String trainerName) {
+    private ResponseEntity clientsWhoBoughtTrainingFromTrainer(@PathVariable String trainerName) {
 //        Either<ErrorMsg, List<TrainingDto>> clientWhoBoughtTrainingFromTrainer =
 //                trainingService.getTrainingsFromTrainer(trainerName);
 //        return ResponseResolver.resolve(clientWhoBoughtTrainingFromTrainer);
