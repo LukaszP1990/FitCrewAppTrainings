@@ -4,21 +4,17 @@ import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
 import com.fitcrew.FitCrewAppTrainings.domains.TrainingEntity;
 import com.fitcrew.FitCrewAppTrainings.dto.TrainingDto;
 import com.fitcrew.FitCrewAppTrainings.resolver.ErrorMsg;
-
 import com.google.common.collect.Lists;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
-
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j
