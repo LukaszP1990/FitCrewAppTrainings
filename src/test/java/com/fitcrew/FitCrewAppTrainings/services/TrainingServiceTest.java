@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 class TrainingServiceTest {
 
     private static final List<TrainingEntity> mockedTrainingEntities = TrainingResourceMockUtil.createTrainingEntities();
+    private static final TrainingEntity mockedTrainingEntity = TrainingResourceMockUtil.createTrainingEntity();
     private static final TrainingDto mockedCreatedTrainingDto = TrainingResourceMockUtil.createTrainingDto();
     private static final TrainingDto mockedUpdatedTrainingDto = TrainingResourceMockUtil.updateTrainingDto();
     private final static String TRAINER_EMAIL = "mockedTrainer@gmail.com";
@@ -32,6 +33,9 @@ class TrainingServiceTest {
 
     @Captor
     private ArgumentCaptor<String> stringArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<TrainingEntity> trainingEntityArgumentCaptor;
 
     @Mock
     private TrainingDao trainingDao;
@@ -72,6 +76,15 @@ class TrainingServiceTest {
 
     @Test
     void shouldCreateTraining() {
+
+        when(trainingDao.save(any())).thenReturn(mockedTrainingEntity);
+
+        Either<ErrorMsg, TrainingDto> createdTraining =
+                trainingService.createTraining(mockedCreatedTrainingDto);
+
+        verifySaveTraining();
+
+        checkAssertionsForTraining(createdTraining);
     }
 
     @Test
@@ -90,6 +103,16 @@ class TrainingServiceTest {
 
     @Test
     void shouldDeleteTraining() {
+
+        when(trainingDao.findByTrainingNameAndTrainerEmail(anyString(), anyString()))
+                .thenReturn(mockedTrainingEntity);
+
+        Either<ErrorMsg, TrainingDto> deletedTraining =
+                trainingService.deleteTraining(TRAINING_NAME, TRAINER_EMAIL);
+
+        verifyDeleteTraining();
+
+        checkAssertionsForTraining(deletedTraining);
     }
 
     @Test
@@ -108,6 +131,16 @@ class TrainingServiceTest {
 
     @Test
     void shouldUpdateTraining() {
+
+        when(trainingDao.findByTrainerEmail(anyString()))
+                .thenReturn(mockedTrainingEntities);
+
+        Either<ErrorMsg, TrainingDto> updatedTraining =
+                trainingService.updateTraining(mockedCreatedTrainingDto, TRAINER_EMAIL);
+
+        verifyFindEntityByEmail();
+
+        checkAssertionsForTraining(updatedTraining);
     }
 
     @Test
@@ -120,13 +153,22 @@ class TrainingServiceTest {
 
         checkEitherLeft(
                 true,
-                "No training deleted",
+                "No training updated",
                 noUpdatedTraining.getLeft());
     }
 
     @Test
     void shouldSelectTraining() {
 
+        when(trainingDao.findByTrainerEmail(anyString()))
+                .thenReturn(mockedTrainingEntities);
+
+        Either<ErrorMsg, TrainingDto> selectedTraining =
+                trainingService.selectTraining(TRAINER_EMAIL, TRAINING_NAME);
+
+        verifyFindEntityByEmail();
+
+        checkAssertionsForTraining(selectedTraining);
     }
 
     @Test
@@ -139,24 +181,71 @@ class TrainingServiceTest {
 
         checkEitherLeft(
                 true,
-                "No training deleted",
+                "No training selected",
                 noSelectedTraining.getLeft());
     }
 
     @Test
     void shouldGetClientsWhoBoughtTraining() {
+
+        when(trainingDao.findByTrainingName(anyString()))
+                .thenReturn(mockedTrainingEntity);
+
+        Either<ErrorMsg, List<String>> clients =
+                trainingService.clientsWhoBoughtTraining(TRAINING_NAME);
+
+        verifyFindEntityByTrainingName();
+
+        assertAll(() -> {
+            assertTrue(clients.isRight());
+            assertEquals(2, clients.get().size());
+        });
     }
 
     @Test
     void shouldNotGetClientsWhoBoughtTraining() {
+
+        Either<ErrorMsg, List<String>> noTrainingFound =
+                trainingService.clientsWhoBoughtTraining(TRAINING_NAME);
+
+        assertNotNull(noTrainingFound);
+
+        checkEitherLeft(
+                true,
+                "No training found",
+                noTrainingFound.getLeft());
     }
 
     @Test
     void shouldGetAllTrainingsBoughtByClient() {
+
+        when(trainingDao.findAll())
+                .thenReturn(mockedTrainingEntities);
+
+        Either<ErrorMsg, List<String>> trainings =
+                trainingService.getAllTrainingsBoughtByClient("mockedFirstClient");
+
+        verify(trainingDao, times(1))
+                .findAll();
+
+        assertAll(() -> {
+            assertTrue(trainings.isRight());
+            assertEquals(3, trainings.get().size());
+        });
     }
 
     @Test
     void shouldNotGetAllTrainingsBoughtByClient() {
+
+        Either<ErrorMsg, List<String>> noTrainingFound =
+                trainingService.getAllTrainingsBoughtByClient(TRAINING_NAME);
+
+        assertNotNull(noTrainingFound);
+
+        checkEitherLeft(
+                true,
+                "No trainings has client bought",
+                noTrainingFound.getLeft());
     }
 
     private void verifyFindEntityByEmail() {
@@ -166,12 +255,44 @@ class TrainingServiceTest {
                 .findByTrainerEmail(stringArgumentCaptor.capture());
     }
 
+    private void verifyFindEntityByTrainingName() {
+        verify(trainingDao, times(1))
+                .findByTrainingName(TRAINING_NAME);
+        verify(trainingDao)
+                .findByTrainingName(stringArgumentCaptor.capture());
+    }
+
+    private void verifySaveTraining() {
+        verify(trainingDao, times(1))
+                .save(any());
+        verify(trainingDao)
+                .save(trainingEntityArgumentCaptor.capture());
+    }
+
+    private void verifyDeleteTraining() {
+        verify(trainingDao, times(1))
+                .delete(mockedTrainingEntity);
+        verify(trainingDao)
+                .delete(trainingEntityArgumentCaptor.capture());
+    }
+
     private void checkEitherLeft(boolean value,
                                  String message,
                                  ErrorMsg errorMsg) {
         assertAll(() -> {
             assertTrue(value);
             assertEquals(message, errorMsg.getMsg());
+        });
+    }
+
+    private void checkAssertionsForTraining(Either<ErrorMsg, TrainingDto> selectedTraining) {
+        assertAll(() -> {
+            assertTrue(selectedTraining.isRight());
+            assertEquals("Mocked training name", selectedTraining.get().getTrainingName());
+            assertEquals("Mocked description", selectedTraining.get().getDescription());
+            assertEquals("Mocked training", selectedTraining.get().getTraining());
+            assertEquals(TRAINER_EMAIL, selectedTraining.get().getTrainerEmail());
+            assertEquals(2, selectedTraining.get().getClients().size());
         });
     }
 }

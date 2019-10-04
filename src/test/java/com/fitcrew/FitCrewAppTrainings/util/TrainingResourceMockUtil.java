@@ -10,31 +10,22 @@ import java.util.stream.IntStream;
 
 public class TrainingResourceMockUtil {
 
-    public static List<String> getListOfClients() {
-        return Arrays.asList(
-                "mockedFirstClient",
-                "mockedSecondClient"
-        );
-    }
-
     public static List<TrainingEntity> createTrainingEntities() {
         return IntStream.rangeClosed(1, 3)
-                .mapToObj(value -> TrainingEntity.builder()
-                        .clients(getListOfClients())
-                        .trainerEmail("mockedTrainer@gmail.com")
-                        .description("Mocked descriprion")
-                        .trainingName("Mocked training name")
-                        .training("Mocked training")
-                        .build())
+                .mapToObj(value -> prepareTrainingEntityData())
                 .collect(Collectors.toList());
+    }
+
+    public static TrainingEntity createTrainingEntity() {
+        return prepareTrainingEntityData();
     }
 
     public static TrainingDto createTrainingDto() {
         return TrainingDto.builder()
                 .clients(getListOfClients())
                 .trainerEmail("mockedTrainer@gmail.com")
-                .description("Mocked descriprion")
-                .name("Mocked training name")
+                .description("Mocked description")
+                .trainingName("Mocked training name")
                 .training("Mocked training")
                 .build();
     }
@@ -43,10 +34,28 @@ public class TrainingResourceMockUtil {
 		return TrainingDto.builder()
 				.clients(getListOfClients())
 				.trainerEmail("UpdatedMockedTrainer@gmail.com")
-				.description("Updated Mocked descriprion")
-				.name("Updated Mocked training name")
+				.description("Updated Mocked description")
+				.trainingName("Updated Mocked training name")
 				.training("Updated Mocked training")
 				.build();
 	}
+
+    private static TrainingEntity prepareTrainingEntityData() {
+        return TrainingEntity.builder()
+                .clients(getListOfClients())
+                .trainerEmail("mockedTrainer@gmail.com")
+                .description("Mocked description")
+                .trainingName("Mocked training name")
+                .training("Mocked training")
+                .build();
+    }
+
+    private static List<String> getListOfClients() {
+        return Arrays.asList(
+                "mockedFirstClient",
+                "mockedSecondClient"
+        );
+    }
+
 
 }

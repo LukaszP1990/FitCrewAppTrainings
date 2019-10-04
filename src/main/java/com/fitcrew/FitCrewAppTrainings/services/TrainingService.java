@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -96,12 +98,12 @@ public class TrainingService {
 
         List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
 
-        TrainingEntity foundTrainingEntityByTrainingName =
-                checkIfTrainingNameExist(trainingDto.getName(), trainerTrainings);
+        Either<ErrorMsg, TrainingEntity> foundTrainingEntityByTrainingName =
+                checkIfTrainingNameExist(trainingDto.getTrainingName(), trainerTrainings);
 
-        if (foundTrainingEntityByTrainingName != null) {
-            log.debug("Training to update {}", foundTrainingEntityByTrainingName);
-            return prepareTrainingUpdate(trainingDto, foundTrainingEntityByTrainingName);
+        if (foundTrainingEntityByTrainingName.isRight()) {
+            log.debug("Training to update {}", foundTrainingEntityByTrainingName.get());
+            return prepareTrainingUpdate(trainingDto, foundTrainingEntityByTrainingName.get());
         } else {
             log.debug("No training updated");
             return Either.left(new ErrorMsg("No training updated"));
@@ -113,11 +115,11 @@ public class TrainingService {
         ModelMapper modelMapper = prepareModelMapperForExistingTraining();
         List<TrainingEntity> trainerTrainings = trainingDao.findByTrainerEmail(trainerEmail);
 
-        TrainingEntity foundTrainerEntityByTrainingName =
+        Either<ErrorMsg, TrainingEntity> foundTrainerEntityByTrainingName =
                 checkIfTrainingNameExist(trainingName, trainerTrainings);
 
-        if (foundTrainerEntityByTrainingName != null) {
-            TrainingDto trainingToReturn = modelMapper.map(foundTrainerEntityByTrainingName, TrainingDto.class);
+        if (foundTrainerEntityByTrainingName.isRight()) {
+            TrainingDto trainingToReturn = modelMapper.map(foundTrainerEntityByTrainingName.get(), TrainingDto.class);
 
             return checkEitherResponseForTraining(trainingToReturn,
                     SUCCESSFULLY_MAPPING,
@@ -162,11 +164,10 @@ public class TrainingService {
     }
 
     private Either<ErrorMsg, List<String>> checkEitherResponseForClientBoughtTrainings(ArrayList<String> trainingNameToReturn) {
-        if(!trainingNameToReturn.isEmpty()){
+        if (!trainingNameToReturn.isEmpty()) {
             log.debug("Trainings has bought by client {}", trainingNameToReturn);
             return Either.right(trainingNameToReturn);
-        }
-        else {
+        } else {
             log.debug("No trainings has client bought");
             return Either.left(new ErrorMsg("No trainings has client bought"));
         }
@@ -180,8 +181,8 @@ public class TrainingService {
     private String checkIfClientNameEqualsWithAnyClientFromSingleTraining(String clientName,
                                                                           TrainingEntity trainingEntity) {
         return trainingEntity.getClients().stream()
-        .filter(client -> client.equals(clientName))
-        .findFirst().orElse(null);
+                .filter(client -> client.equals(clientName))
+                .findFirst().orElse(null);
     }
 
     private Either<ErrorMsg, List<String>> checkEitherResponseForClients(List<String> clients) {
@@ -210,17 +211,21 @@ public class TrainingService {
 
     private void setNewValuesForTraining(TrainingDto trainingDto,
                                          TrainingEntity foundTrainerEntityByTrainingName) {
-        foundTrainerEntityByTrainingName.setTrainingName(trainingDto.getName());
+        foundTrainerEntityByTrainingName.setTrainingName(trainingDto.getTrainingName());
         foundTrainerEntityByTrainingName.setDescription(trainingDto.getDescription());
         foundTrainerEntityByTrainingName.setTraining(trainingDto.getTraining());
         foundTrainerEntityByTrainingName.setTrainerEmail(trainingDto.getTrainerEmail());
     }
 
-    private TrainingEntity checkIfTrainingNameExist(String trainingName, List<TrainingEntity> trainerTrainings) {
-        return trainerTrainings.stream()
-                .filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingName))
-                .findFirst()
-                .orElseGet(null);
+    private Either<ErrorMsg, TrainingEntity> checkIfTrainingNameExist(String trainingName, List<TrainingEntity> trainerTrainings) {
+        Optional<TrainingEntity> training = trainerTrainings.stream()
+                .filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingName)).findFirst();
+
+        if (training.isPresent()) {
+            return Either.right(training.get());
+        } else {
+            return Either.left(new ErrorMsg("No training found"));
+        }
     }
 
     private Either<ErrorMsg, TrainingDto> checkEitherResponseForTraining(TrainingDto training,
