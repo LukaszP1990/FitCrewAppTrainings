@@ -35,5 +35,6 @@ public class TrainingEntity implements Serializable {
 	private String trainerEmail;
 
 	@Column(name = "Clients")
+	@ElementCollection(targetClass=String.class)
 	private List<String> clients;
 }

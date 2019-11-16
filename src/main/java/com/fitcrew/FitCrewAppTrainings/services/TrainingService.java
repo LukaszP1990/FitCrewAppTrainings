@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class TrainingService {
 
     private final TrainingDao trainingDao;
-    private static long clientId = 1;
+   // private static long trainingId = 1;
     private String SUCCESSFULLY_MAPPING = "Training object mapped successfully and send to trainer web service {}";
     private String NOT_SUCCESSFULLY_MAPPING = "Training not mapped successfully";
 
@@ -221,11 +221,8 @@ public class TrainingService {
         Optional<TrainingEntity> training = trainerTrainings.stream()
                 .filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingName)).findFirst();
 
-        if (training.isPresent()) {
-            return Either.right(training.get());
-        } else {
-            return Either.left(new ErrorMsg("No training found"));
-        }
+        return training.<Either<ErrorMsg, TrainingEntity>>map(Either::right)
+                .orElseGet(() -> Either.left(new ErrorMsg("No training found")));
     }
 
     private Either<ErrorMsg, TrainingDto> checkEitherResponseForTraining(TrainingDto training,
@@ -240,19 +237,19 @@ public class TrainingService {
         }
     }
 
-    private PropertyMap<TrainingDto, TrainingEntity> skipModifiedFieldsMap = new PropertyMap<TrainingDto, TrainingEntity>() {
-        protected void configure() {
-            skip().setId(clientId);
-            clientId++;
-        }
-    };
+//    private PropertyMap<TrainingDto, TrainingEntity> skipModifiedFieldsMap = new PropertyMap<TrainingDto, TrainingEntity>() {
+//        protected void configure() {
+//            skip().setId(trainingId);
+//            trainingId++;
+//        }
+//    };
 
     private ModelMapper prepareModelMapperForNewTraining() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper
                 .getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        modelMapper.addMappings(skipModifiedFieldsMap);
+        //modelMapper.addMappings(skipModifiedFieldsMap);
         return modelMapper;
     }
 

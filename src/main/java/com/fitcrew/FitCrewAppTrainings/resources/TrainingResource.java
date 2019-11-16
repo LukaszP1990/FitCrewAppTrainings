@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 @Api(value = "Trainings resources")
 @Slf4j
 @RestController
@@ -35,28 +37,6 @@ class TrainingResource {
 
     public TrainingResource(TrainingService trainingService) {
         this.trainingService = trainingService;
-    }
-
-    @ApiOperation(value = "Return all clients who bought training from trainer")
-    @ApiResponses(value =
-            {
-                    @ApiResponse(code = 200, message = "Successful all clients who bought training from trainer response!"),
-                    @ApiResponse(code = 400, message = "400 bad request, rest call is made with some invalid data!"),
-                    @ApiResponse(code = 404, message = "404 not found, url is wrong")
-            }
-    )
-    @GetMapping(value = "/getClientsWhoBoughtTraining/{trainerName}/trainerName",
-            consumes = {
-                    MediaType.APPLICATION_JSON_VALUE,
-                    MediaType.APPLICATION_XML_VALUE},
-            produces = {
-                    MediaType.APPLICATION_JSON_VALUE,
-                    MediaType.APPLICATION_XML_VALUE})
-    private ResponseEntity clientsWhoBoughtTrainingFromTrainer(@PathVariable String trainerName) {
-//        Either<ErrorMsg, List<TrainingDto>> clientWhoBoughtTrainingFromTrainer =
-//                trainingService.getTrainingsFromTrainer(trainerName);
-//        return ResponseResolver.resolve(clientWhoBoughtTrainingFromTrainer);
-        return null;
     }
 
     @ApiOperation(value = "Return all trainings from trainer")
@@ -97,7 +77,7 @@ class TrainingResource {
             produces = {
                     MediaType.APPLICATION_JSON_VALUE,
                     MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity createTrainingByTrainer(@RequestBody TrainingDto trainingDto) {
+    public ResponseEntity createTraining(@RequestBody @Valid TrainingDto trainingDto) {
 
         Either<ErrorMsg, TrainingDto> createdTrainingByTrainer =
                 trainingService.createTraining(trainingDto);
