@@ -3,6 +3,7 @@ package com.fitcrew.FitCrewAppTrainings.services;
 import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
 import com.fitcrew.FitCrewAppTrainings.domains.TrainingEntity;
 import com.fitcrew.FitCrewAppTrainings.dto.TrainingDto;
+import com.fitcrew.FitCrewAppTrainings.enums.TrainingErrorMessageType;
 import com.fitcrew.FitCrewAppTrainings.resolver.ErrorMsg;
 import com.fitcrew.FitCrewAppTrainings.util.TrainingResourceMockUtil;
 import io.vavr.control.Either;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +32,9 @@ class TrainingServiceTest {
     private static final TrainingDto mockedUpdatedTrainingDto = TrainingResourceMockUtil.updateTrainingDto();
     private final static String TRAINER_EMAIL = "mockedTrainer@gmail.com";
     private final static String TRAINING_NAME = "Mocked training name";
+    private final static String TRAINING_DESCRIPTION = "Mocked description";
+    private final static String TRAINING = "Mocked training";
+
 
     @Captor
     private ArgumentCaptor<String> stringArgumentCaptor;
@@ -46,7 +51,7 @@ class TrainingServiceTest {
     @Test
     void shouldGetTrainerTrainings() {
         when(trainingDao.findByTrainerEmail(anyString()))
-                .thenReturn(mockedTrainingEntities);
+                .thenReturn(Optional.of(mockedTrainingEntities));
 
         Either<ErrorMsg, List<TrainingDto>> trainerTrainings =
                 trainingService.getTrainerTrainings(TRAINER_EMAIL);
@@ -69,8 +74,7 @@ class TrainingServiceTest {
         assertNotNull(noTrainerTrainings);
 
         checkEitherLeft(
-                true,
-                "No training found",
+                TrainingErrorMessageType.NO_TRAINING_FOUND,
                 noTrainerTrainings.getLeft());
     }
 
@@ -83,7 +87,6 @@ class TrainingServiceTest {
                 trainingService.createTraining(mockedCreatedTrainingDto);
 
         verifySaveTraining();
-
         checkAssertionsForTraining(createdTraining);
     }
 
@@ -94,10 +97,8 @@ class TrainingServiceTest {
                 trainingService.createTraining(mockedCreatedTrainingDto);
 
         assertNotNull(noTrainingCreated);
-
         checkEitherLeft(
-                true,
-                "No training saved",
+                TrainingErrorMessageType.NO_TRAINING_SAVED,
                 noTrainingCreated.getLeft());
     }
 
@@ -105,13 +106,12 @@ class TrainingServiceTest {
     void shouldDeleteTraining() {
 
         when(trainingDao.findByTrainingNameAndTrainerEmail(anyString(), anyString()))
-                .thenReturn(mockedTrainingEntity);
+                .thenReturn(Optional.of(mockedTrainingEntity));
 
         Either<ErrorMsg, TrainingDto> deletedTraining =
                 trainingService.deleteTraining(TRAINING_NAME, TRAINER_EMAIL);
 
         verifyDeleteTraining();
-
         checkAssertionsForTraining(deletedTraining);
     }
 
@@ -122,10 +122,8 @@ class TrainingServiceTest {
                 trainingService.deleteTraining(TRAINING_NAME, TRAINER_EMAIL);
 
         assertNotNull(noDeletedTraining);
-
         checkEitherLeft(
-                true,
-                "No training deleted",
+                TrainingErrorMessageType.NO_TRAINING_DELETED,
                 noDeletedTraining.getLeft());
     }
 
@@ -133,13 +131,12 @@ class TrainingServiceTest {
     void shouldUpdateTraining() {
 
         when(trainingDao.findByTrainerEmail(anyString()))
-                .thenReturn(mockedTrainingEntities);
+                .thenReturn(Optional.of(mockedTrainingEntities));
 
         Either<ErrorMsg, TrainingDto> updatedTraining =
                 trainingService.updateTraining(mockedCreatedTrainingDto, TRAINER_EMAIL);
 
         verifyFindEntityByEmail();
-
         checkAssertionsForTraining(updatedTraining);
     }
 
@@ -150,10 +147,8 @@ class TrainingServiceTest {
                 trainingService.updateTraining(mockedUpdatedTrainingDto, TRAINER_EMAIL);
 
         assertNotNull(noUpdatedTraining);
-
         checkEitherLeft(
-                true,
-                "No training updated",
+                TrainingErrorMessageType.NO_TRAINING_UPDATED,
                 noUpdatedTraining.getLeft());
     }
 
@@ -161,13 +156,12 @@ class TrainingServiceTest {
     void shouldSelectTraining() {
 
         when(trainingDao.findByTrainerEmail(anyString()))
-                .thenReturn(mockedTrainingEntities);
+                .thenReturn(Optional.of(mockedTrainingEntities));
 
         Either<ErrorMsg, TrainingDto> selectedTraining =
                 trainingService.selectTraining(TRAINER_EMAIL, TRAINING_NAME);
 
         verifyFindEntityByEmail();
-
         checkAssertionsForTraining(selectedTraining);
     }
 
@@ -178,10 +172,8 @@ class TrainingServiceTest {
                 trainingService.selectTraining(TRAINER_EMAIL, TRAINING_NAME);
 
         assertNotNull(noSelectedTraining);
-
         checkEitherLeft(
-                true,
-                "No training selected",
+                TrainingErrorMessageType.NO_TRAINING_SELECTED,
                 noSelectedTraining.getLeft());
     }
 
@@ -189,13 +181,12 @@ class TrainingServiceTest {
     void shouldGetClientsWhoBoughtTraining() {
 
         when(trainingDao.findByTrainingName(anyString()))
-                .thenReturn(mockedTrainingEntity);
+                .thenReturn(Optional.of(mockedTrainingEntity));
 
         Either<ErrorMsg, List<String>> clients =
                 trainingService.clientsWhoBoughtTraining(TRAINING_NAME);
 
         verifyFindEntityByTrainingName();
-
         assertAll(() -> {
             assertTrue(clients.isRight());
             assertEquals(2, clients.get().size());
@@ -209,10 +200,8 @@ class TrainingServiceTest {
                 trainingService.clientsWhoBoughtTraining(TRAINING_NAME);
 
         assertNotNull(noTrainingFound);
-
         checkEitherLeft(
-                true,
-                "No training found",
+                TrainingErrorMessageType.NO_TRAINING_FOUND,
                 noTrainingFound.getLeft());
     }
 
@@ -227,7 +216,6 @@ class TrainingServiceTest {
 
         verify(trainingDao, times(1))
                 .findAll();
-
         assertAll(() -> {
             assertTrue(trainings.isRight());
             assertEquals(3, trainings.get().size());
@@ -241,10 +229,8 @@ class TrainingServiceTest {
                 trainingService.getAllTrainingsBoughtByClient(TRAINING_NAME);
 
         assertNotNull(noTrainingFound);
-
         checkEitherLeft(
-                true,
-                "No trainings has client bought",
+                TrainingErrorMessageType.NO_TRAININGS_BOUGHT,
                 noTrainingFound.getLeft());
     }
 
@@ -276,21 +262,19 @@ class TrainingServiceTest {
                 .delete(trainingEntityArgumentCaptor.capture());
     }
 
-    private void checkEitherLeft(boolean value,
-                                 String message,
-                                 ErrorMsg errorMsg) {
-        assertAll(() -> {
-            assertTrue(value);
-            assertEquals(message, errorMsg.getMsg());
-        });
+
+    private void checkEitherLeft(TrainingErrorMessageType trainingErrorMessage,
+                                 ErrorMsg errorMsgEitherLeft) {
+        assertTrue(true);
+        assertEquals(trainingErrorMessage.toString(), errorMsgEitherLeft.getMsg());
     }
 
     private void checkAssertionsForTraining(Either<ErrorMsg, TrainingDto> selectedTraining) {
         assertAll(() -> {
             assertTrue(selectedTraining.isRight());
-            assertEquals("Mocked training name", selectedTraining.get().getTrainingName());
-            assertEquals("Mocked description", selectedTraining.get().getDescription());
-            assertEquals("Mocked training", selectedTraining.get().getTraining());
+            assertEquals(TRAINING_NAME, selectedTraining.get().getTrainingName());
+            assertEquals(TRAINING_DESCRIPTION, selectedTraining.get().getDescription());
+            assertEquals(TRAINING, selectedTraining.get().getTraining());
             assertEquals(TRAINER_EMAIL, selectedTraining.get().getTrainerEmail());
             assertEquals(2, selectedTraining.get().getClients().size());
         });

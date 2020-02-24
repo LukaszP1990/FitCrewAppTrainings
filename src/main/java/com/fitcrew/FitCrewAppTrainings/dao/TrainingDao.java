@@ -6,12 +6,13 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TrainingDao extends CrudRepository<TrainingEntity, Long> {
-	List<TrainingEntity> findByTrainerEmail(String trainerEmail);
+	Optional<List<TrainingEntity>> findByTrainerEmail(String trainerEmail);
 
-	TrainingEntity findByTrainingName(String trainingName);
+	Optional<TrainingEntity> findByTrainingName(String trainingName);
 
-	TrainingEntity findByTrainingNameAndTrainerEmail(String trainingName, String trainerEmail);
+	Optional<TrainingEntity> findByTrainingNameAndTrainerEmail(String trainingName, String trainerEmail);
 }
