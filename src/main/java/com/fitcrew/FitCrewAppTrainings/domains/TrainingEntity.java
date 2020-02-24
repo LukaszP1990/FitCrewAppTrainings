@@ -2,12 +2,18 @@ package com.fitcrew.FitCrewAppTrainings.domains;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.util.List;
 
-@Entity
+import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+@Document
 @Getter
 @Setter
 @Builder
@@ -19,22 +25,30 @@ public class TrainingEntity implements Serializable {
 	private static final long serialVersionUID = -3255126230685615683L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "TrainingName", nullable = false, length = 100, unique = true)
+	@Field(value = "TRAINING_NAME")
+	@Indexed(unique = true)
+	@NotNull
+	@Length(max = 100)
 	private String trainingName;
 
-	@Column(nullable = false, length = 400)
+	@Field(value = "DESCRIPTION")
+	@NotNull
+	@Length(max = 400)
 	private String description;
 
-	@Column(nullable = false)
+	@Field(value = "TRAINING")
+	@NotNull
 	private String training;
 
-	@Column(name = "TrainerEmail", nullable = false, length = 50)
+	@Field(value = "TRAINER_EMAIL")
+	@NotNull
+	@Length(max = 50)
 	private String trainerEmail;
 
-	@Column(name = "Clients")
-	@ElementCollection(targetClass=String.class)
+	@Field(value = "CLIENTS")
+	@NotNull
+	@Length(max = 400)
 	private List<String> clients;
 }
