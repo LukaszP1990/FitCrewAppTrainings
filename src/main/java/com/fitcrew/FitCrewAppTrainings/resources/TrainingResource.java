@@ -1,6 +1,6 @@
 package com.fitcrew.FitCrewAppTrainings.resources;
 
-import com.fitcrew.FitCrewAppTrainings.dto.TrainingDto;
+import com.fitcrew.FitCrewAppModel.domain.model.TrainingDto;
 import com.fitcrew.FitCrewAppTrainings.resolver.ErrorMsg;
 import com.fitcrew.FitCrewAppTrainings.resolver.ResponseResolver;
 import com.fitcrew.FitCrewAppTrainings.services.TrainingService;

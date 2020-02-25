@@ -1,8 +1,8 @@
 package com.fitcrew.FitCrewAppTrainings.services;
 
+import com.fitcrew.FitCrewAppModel.domain.model.TrainingDto;
 import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
 import com.fitcrew.FitCrewAppTrainings.domains.TrainingEntity;
-import com.fitcrew.FitCrewAppTrainings.dto.TrainingDto;
 import com.fitcrew.FitCrewAppTrainings.enums.TrainingErrorMessageType;
 import com.fitcrew.FitCrewAppTrainings.resolver.ErrorMsg;
 import com.google.common.collect.Lists;
