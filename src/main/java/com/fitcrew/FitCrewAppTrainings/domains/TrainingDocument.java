@@ -20,12 +20,12 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor(onConstructor = @__(@Builder))
 @NoArgsConstructor
 @ToString
-public class TrainingEntity implements Serializable {
+public class TrainingDocument implements Serializable {
 
 	private static final long serialVersionUID = -3255126230685615683L;
 
 	@Id
-	private Long id;
+	private String id;
 
 	@Field(value = "TRAINING_NAME")
 	@Indexed(unique = true)

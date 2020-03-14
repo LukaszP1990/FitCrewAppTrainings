@@ -1,8 +1,9 @@
 package com.fitcrew.FitCrewAppTrainings.services;
 
 import com.fitcrew.FitCrewAppModel.domain.model.TrainingDto;
+import com.fitcrew.FitCrewAppTrainings.converter.TrainingDocumentTrainingDtoConverter;
 import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
-import com.fitcrew.FitCrewAppTrainings.domains.TrainingEntity;
+import com.fitcrew.FitCrewAppTrainings.domains.TrainingDocument;
 import com.fitcrew.FitCrewAppTrainings.enums.TrainingErrorMessageType;
 import com.fitcrew.FitCrewAppTrainings.resolver.ErrorMsg;
 import com.google.common.collect.Lists;
@@ -10,9 +11,6 @@ import com.google.common.collect.Lists;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,43 +23,41 @@ import java.util.stream.Collectors;
 public class TrainingService {
 
 	private final TrainingDao trainingDao;
-	private static long trainingId = 1;
+	private final TrainingDocumentTrainingDtoConverter trainingConverter;
 
-	public TrainingService(TrainingDao trainingDao) {
+	TrainingService(TrainingDao trainingDao,
+					TrainingDocumentTrainingDtoConverter trainingConverter) {
 		this.trainingDao = trainingDao;
+		this.trainingConverter = trainingConverter;
 	}
 
 	public Either<ErrorMsg, List<TrainingDto>> getTrainerTrainings(String trainerEmail) {
-		ModelMapper modelMapper = prepareModelMapper();
 
 		return trainingDao.findByTrainerEmail(trainerEmail)
 				.filter(trainings -> !trainings.isEmpty())
-				.map(trainings -> getTrainingDtos(modelMapper, trainings))
+				.map(this::getTrainingDtos)
 				.map(Either::<ErrorMsg, List<TrainingDto>>right)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_FOUND.toString())));
 	}
 
-	private List<TrainingDto> getTrainingDtos(ModelMapper modelMapper, List<TrainingEntity> training) {
+	private List<TrainingDto> getTrainingDtos(List<TrainingDocument> training) {
 		return training.stream()
-				.map(trainingEntity -> modelMapper.map(trainingEntity, TrainingDto.class))
+				.map(trainingConverter::trainingDocumentToTrainingDto)
 				.collect(Collectors.toList());
 	}
 
 	public Either<ErrorMsg, TrainingDto> createTraining(TrainingDto trainingDto) {
-		ModelMapper modelMapper = prepareModelMapper();
-
-		return Optional.ofNullable(trainingDao.save(modelMapper.map(trainingDto, TrainingEntity.class)))
-				.map(training -> modelMapper.map(training, TrainingDto.class))
+		return Optional.ofNullable(trainingDao.save(trainingConverter.trainingDtoToTrainingDocument(trainingDto)))
+				.map(trainingConverter::trainingDocumentToTrainingDto)
 				.map(Either::<ErrorMsg, TrainingDto>right)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_SAVED.toString())));
 	}
 
 	public Either<ErrorMsg, TrainingDto> deleteTraining(String trainingName,
 														String trainerEmail) {
-		ModelMapper modelMapper = prepareModelMapper();
 
 		return trainingDao.findByTrainingNameAndTrainerEmail(trainingName, trainerEmail)
-				.map(training -> prepareSuccessfulTrainingDeleting(modelMapper, training))
+				.map(this::prepareSuccessfulTrainingDeleting)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_DELETED.toString())));
 	}
 
@@ -76,53 +72,51 @@ public class TrainingService {
 
 	public Either<ErrorMsg, TrainingDto> selectTraining(String trainerEmail,
 														String trainingName) {
-		ModelMapper modelMapper = prepareModelMapper();
-
 		return trainingDao.findByTrainerEmail(trainerEmail)
 				.filter(trainings -> !trainings.isEmpty())
 				.map(trainings -> checkIfTrainingExistByName(trainingName, trainings))
-				.map(training -> modelMapper.map(training.get(), TrainingDto.class))
+				.map(training -> trainingConverter.trainingDocumentToTrainingDto(training.get()))
 				.map(this::checkEitherResponseForTraining)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_SELECTED.toString())));
 	}
 
 	public Either<ErrorMsg, List<String>> clientsWhoBoughtTraining(String trainingName) {
 		return trainingDao.findByTrainingName(trainingName)
-				.map(TrainingEntity::getClients)
+				.map(TrainingDocument::getClients)
 				.map(this::checkEitherResponseForClients)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_FOUND.toString())));
 	}
 
 	public Either<ErrorMsg, List<String>> getAllTrainingsBoughtByClient(String clientName) {
-		return Optional.of(prepareTrainingEntityList())
-				.map(trainingEntities -> getTrainingEntities(clientName, trainingEntities))
+		return Optional.of(prepareTrainingDocuments())
+				.map(trainingDocuments -> getTrainingDocuments(clientName, trainingDocuments))
 				.filter(trainingNames -> !trainingNames.isEmpty())
 				.map(Either::<ErrorMsg, List<String>>right)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAININGS_BOUGHT.toString())));
 	}
 
-	private List<String> getTrainingEntities(String clientName, ArrayList<TrainingEntity> trainingEntities) {
-		return trainingEntities.stream()
-				.map(trainingEntity -> checkIfClientNameEqualsWithAnyClientFromSingleTraining(clientName, trainingEntity))
+	private List<String> getTrainingDocuments(String clientName, ArrayList<TrainingDocument> trainingDocuments) {
+		return trainingDocuments.stream()
+				.map(trainingDocument -> checkIfClientNameEqualsWithAnyClientFromSingleTraining(clientName, trainingDocument))
 				.collect(Collectors.toList());
 	}
 
-	private Either<ErrorMsg, TrainingDto> prepareSuccessfulTrainingDeleting(ModelMapper modelMapper,
-																			TrainingEntity trainingToDelete) {
-		trainingDao.delete(trainingToDelete);
-		TrainingDto trainingToReturn = modelMapper.map(trainingToDelete, TrainingDto.class);
+	private Either<ErrorMsg, TrainingDto> prepareSuccessfulTrainingDeleting(TrainingDocument trainingDocument) {
+		trainingDao.delete(trainingDocument);
 
-		return checkEitherResponseForTraining(trainingToReturn);
+		return checkEitherResponseForTraining(
+				trainingConverter.trainingDocumentToTrainingDto(trainingDocument)
+		);
 	}
 
-	private ArrayList<TrainingEntity> prepareTrainingEntityList() {
-		Iterable<TrainingEntity> trainingEntities = trainingDao.findAll();
-		return Lists.newArrayList(trainingEntities);
+	private ArrayList<TrainingDocument> prepareTrainingDocuments() {
+		Iterable<TrainingDocument> trainingDocuments = trainingDao.findAll();
+		return Lists.newArrayList(trainingDocuments);
 	}
 
 	private String checkIfClientNameEqualsWithAnyClientFromSingleTraining(String clientName,
-																		  TrainingEntity trainingEntity) {
-		return trainingEntity.getClients().stream()
+																		  TrainingDocument trainingDocument) {
+		return trainingDocument.getClients().stream()
 				.filter(client -> client.equals(clientName))
 				.findFirst()
 				.orElse(null);
@@ -136,29 +130,31 @@ public class TrainingService {
 	}
 
 	private Either<ErrorMsg, TrainingDto> prepareTrainingUpdate(TrainingDto trainingDto,
-																TrainingEntity foundTrainerEntityByTrainingName) {
-		ModelMapper modelMapper = prepareModelMapper();
-		trainingDao.save(foundTrainerEntityByTrainingName);
-		setNewValuesForTraining(trainingDto, foundTrainerEntityByTrainingName);
-		TrainingDto trainingToReturn = modelMapper.map(foundTrainerEntityByTrainingName, TrainingDto.class);
+																TrainingDocument trainingDocument) {
+		trainingDao.save(trainingDocument);
 
-		return checkEitherResponseForTraining(trainingToReturn);
+		return checkEitherResponseForTraining(
+				trainingConverter.trainingDocumentToTrainingDto(
+						setNewValuesForTrainingDocument(trainingDto, trainingDocument)
+				)
+		);
 	}
 
-	private void setNewValuesForTraining(TrainingDto trainingDto,
-										 TrainingEntity foundTrainerEntityByTrainingName) {
-		foundTrainerEntityByTrainingName.setTrainingName(trainingDto.getTrainingName());
-		foundTrainerEntityByTrainingName.setDescription(trainingDto.getDescription());
-		foundTrainerEntityByTrainingName.setTraining(trainingDto.getTraining());
-		foundTrainerEntityByTrainingName.setTrainerEmail(trainingDto.getTrainerEmail());
+	private TrainingDocument setNewValuesForTrainingDocument(TrainingDto trainingDto,
+															 TrainingDocument trainingDocument) {
+		trainingDocument.setTrainingName(trainingDto.getTrainingName());
+		trainingDocument.setDescription(trainingDto.getDescription());
+		trainingDocument.setTraining(trainingDto.getTraining());
+		trainingDocument.setTrainerEmail(trainingDto.getTrainerEmail());
+		return trainingDocument;
 	}
 
-	private Either<ErrorMsg, TrainingEntity> checkIfTrainingExistByName(String trainingName,
-																		List<TrainingEntity> trainerTrainings) {
+	private Either<ErrorMsg, TrainingDocument> checkIfTrainingExistByName(String trainingName,
+																		  List<TrainingDocument> trainerTrainings) {
 		return trainerTrainings.stream()
-				.filter(trainingEntity -> trainingEntity.getTrainingName().equals(trainingName))
+				.filter(trainingDocument -> trainingDocument.getTrainingName().equals(trainingName))
 				.findFirst()
-				.map(Either::<ErrorMsg, TrainingEntity>right)
+				.map(Either::<ErrorMsg, TrainingDocument>right)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NO_TRAINING_FOUND.toString())));
 	}
 
@@ -166,21 +162,5 @@ public class TrainingService {
 		return Optional.ofNullable(training)
 				.map(Either::<ErrorMsg, TrainingDto>right)
 				.orElse(Either.left(new ErrorMsg(TrainingErrorMessageType.NOT_SUCCESSFULLY_MAPPING.toString())));
-	}
-
-	private PropertyMap<TrainingDto, TrainingEntity> skipModifiedFieldsMap = new PropertyMap<TrainingDto, TrainingEntity>() {
-		protected void configure() {
-			skip().setId(trainingId);
-			trainingId++;
-		}
-	};
-
-	private ModelMapper prepareModelMapper() {
-		ModelMapper modelMapper = new ModelMapper();
-		modelMapper
-				.getConfiguration()
-				.setMatchingStrategy(MatchingStrategies.STRICT);
-		modelMapper.addMappings(skipModifiedFieldsMap);
-		return modelMapper;
 	}
 }
