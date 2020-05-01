@@ -1,40 +1,34 @@
 package com.fitcrew.FitCrewAppTrainings.resources;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
+import com.fitcrew.FitCrewAppTrainings.FitCrewAppTrainingsApplication;
+import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
+import com.fitcrew.FitCrewAppTrainings.domains.TrainingDocument;
+import com.fitcrew.FitCrewAppTrainings.dto.TrainingDto;
+import com.fitcrew.FitCrewAppTrainings.util.HttpEntityUtil;
+import com.fitcrew.FitCrewAppTrainings.util.TrainingResourceMockUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-import com.fitcrew.FitCrewAppModel.domain.model.TrainingDto;
-import com.fitcrew.FitCrewAppTrainings.FitCrewAppTrainingsApplication;
-import com.fitcrew.FitCrewAppTrainings.dao.TrainingDao;
-import com.fitcrew.FitCrewAppTrainings.domains.TrainingDocument;
-import com.fitcrew.FitCrewAppTrainings.util.HttpEntityUtil;
-import com.fitcrew.FitCrewAppTrainings.util.TrainingResourceMockUtil;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @TestPropertySource(locations = {"classpath:application-test.properties"})
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(classes = FitCrewAppTrainingsApplication.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class TrainingResourceTest {
+class TrainingResourceTest extends AbstractRestResourceTest{
 
 	private static final List<TrainingDocument> mockedTrainingDocuments = TrainingResourceMockUtil.createTrainingDocuments();
 	private static final TrainingDocument mockedTrainingDocument = TrainingResourceMockUtil.createTrainingDocument();
@@ -43,9 +37,6 @@ class TrainingResourceTest {
 	private final static String TRAINING_DESCRIPTION = "Mocked description";
 	private final static String TRAINING = "Mocked training";
 	private final static String CLIENT_NAME =  "mockedFirstClient";
-
-	@Inject
-	private TestRestTemplate restTemplate;
 
 	@MockBean
 	private TrainingDao trainingDao;
@@ -97,7 +88,7 @@ class TrainingResourceTest {
 				"/training/getTrainerTrainings/" + TRAINER_EMAIL + "/trainerEmail",
 				HttpMethod.GET,
 				HttpEntityUtil.getHttpEntityWithJwt(),
-				new ParameterizedTypeReference<List<TrainingDto>>() {
+				new ParameterizedTypeReference<>() {
 				}
 		);
 
@@ -155,7 +146,7 @@ class TrainingResourceTest {
 				"/training/clientsWhoBoughtTraining/" + TRAINING_NAME + "/trainingName",
 				HttpMethod.GET,
 				HttpEntityUtil.getHttpEntityWithJwt(),
-				new ParameterizedTypeReference<List<String>>() {
+				new ParameterizedTypeReference<>() {
 				}
 		);
 
@@ -174,7 +165,7 @@ class TrainingResourceTest {
 				"/training/trainingsBoughtByClient/" + CLIENT_NAME + "/clientName",
 				HttpMethod.GET,
 				HttpEntityUtil.getHttpEntityWithJwt(),
-				new ParameterizedTypeReference<List<String>>() {
+				new ParameterizedTypeReference<>() {
 				}
 		);
 
